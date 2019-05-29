@@ -9,6 +9,11 @@
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 
+#include "ShootingSystem/Bullet.h"
+#include "Components/SceneComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+
+
 //////////////////////////////////////////////////////////////////////////
 // APuzzlePlatformsCharacter
 
@@ -43,6 +48,7 @@ APuzzlePlatformsCharacter::APuzzlePlatformsCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
@@ -50,10 +56,43 @@ APuzzlePlatformsCharacter::APuzzlePlatformsCharacter()
 //////////////////////////////////////////////////////////////////////////
 // Input
 
+void APuzzlePlatformsCharacter::Shoot()
+{
+	if (BulletClass) 
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		SpawnParams.bNoFail = true;
+		SpawnParams.Instigator = this;
+	
+		USkeletalMeshComponent* SkeletalMesh = ACharacter::GetMesh();
+
+		if (!ensure(SkeletalMesh != nullptr)) return;
+		const FVector SpawnLocationR = SkeletalMesh->GetSocketLocation(FName(TEXT("ik_hand_rSocket")));
+		const FVector SpawnLocationL = SkeletalMesh->GetSocketLocation(FName(TEXT("ik_hand_lSocket")));
+
+		const FRotator Rotation = FollowCamera->GetComponentRotation();
+	
+		/*FTransform BulletSpawnTransform;
+		BulletSpawnTransform.SetLocation(GetActorForwardVector() * 500.f + GetActorLocation());
+		BulletSpawnTransform.SetRotation(GetActorRotation().Quaternion());
+		BulletSpawnTransform.SetScale3D(FVector(1.f));*/
+
+		GetWorld()->SpawnActor<ABullet>(BulletClass, SpawnLocationR, Rotation, SpawnParams);
+		GetWorld()->SpawnActor<ABullet>(BulletClass, SpawnLocationL, Rotation, SpawnParams);
+
+		UE_LOG(LogTemp, Warning, TEXT("Fire"));
+		//GetWorld()->SpawnActor<ABullet>(BulletClass, BulletSpawnTransform, SpawnParams);
+	}
+}
+
 void APuzzlePlatformsCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	// Set up gameplay key bindings
 	check(PlayerInputComponent);
+
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APuzzlePlatformsCharacter::Shoot);
+
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 

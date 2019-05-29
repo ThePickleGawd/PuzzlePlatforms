@@ -6,6 +6,21 @@
 #include "GameFramework/Character.h"
 #include "PuzzlePlatformsCharacter.generated.h"
 
+//USTRUCT()
+//struct FCharacterSkins
+//{
+//	GENERATED_BODY()
+//
+//	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Assets")
+//	USkeletalMesh* DefaultSkin;
+//
+//	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Assets")
+//	USkeletalMesh* ActionHero;
+//	
+//	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Assets")
+//	USkeletalMesh* ShadowOps;
+//};
+
 UCLASS(config=Game)
 class APuzzlePlatformsCharacter : public ACharacter
 {
@@ -28,6 +43,15 @@ public:
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
+
+protected: //Dylan
+	void Shoot();
+
+	UPROPERTY(EditAnywhere, Category = "Shooting")
+	TSubclassOf<class ABullet> BulletClass;
+
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Assets")
+	//TSharedPtr<USkeletalMesh*> Skins;
 
 protected:
 
