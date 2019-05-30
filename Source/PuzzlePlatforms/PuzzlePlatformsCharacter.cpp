@@ -58,7 +58,7 @@ APuzzlePlatformsCharacter::APuzzlePlatformsCharacter()
 
 void APuzzlePlatformsCharacter::Shoot()
 {
-	if (BulletClass) 
+	if (BulletClass && !SprintTrue) 
 	{
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;

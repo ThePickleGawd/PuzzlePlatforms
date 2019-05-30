@@ -50,6 +50,9 @@ protected: //Dylan
 	UPROPERTY(EditAnywhere, Category = "Shooting")
 	TSubclassOf<class ABullet> BulletClass;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool SprintTrue;
+
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Assets")
 	//TSharedPtr<USkeletalMesh*> Skins;
 
