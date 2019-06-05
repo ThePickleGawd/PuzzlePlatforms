@@ -74,13 +74,13 @@ void APuzzlePlatformsCharacter::ShootPressed()
 
 void APuzzlePlatformsCharacter::ShootReleased()
 {
+	GetWorldTimerManager().ClearTimer(FireTimerHandle);
 	IsFiring = false;
 }
 
 void APuzzlePlatformsCharacter::SpawnBullet()
 {
 	if (!IsFiring) {
-		GetWorldTimerManager().ClearTimer(FireTimerHandle);
 		return;
 	}
 	UE_LOG(LogTemp, Warning, TEXT("spawn"));
