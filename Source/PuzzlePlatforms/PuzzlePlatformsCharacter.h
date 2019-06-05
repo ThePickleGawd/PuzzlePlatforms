@@ -45,16 +45,35 @@ public:
 	float BaseLookUpRate;
 
 protected: //Dylan
-	void Shoot();
-
+	
 	UPROPERTY(EditAnywhere, Category = "Shooting")
 	TSubclassOf<class ABullet> BulletClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool SprintTrue;
+	
+	/*Shooting system*/
+
+	void ShootPressed();
+	void ShootReleased();
+
+	UFUNCTION()
+	void SpawnBullet();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsFiring;
+
+	int32 Ammo = 50;
+
+	
 
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Assets")
 	//TSharedPtr<USkeletalMesh*> Skins;
+
+private:
+	float FireRate = 0.567;
+
+	FTimerHandle FireTimerHandle;
 
 protected:
 

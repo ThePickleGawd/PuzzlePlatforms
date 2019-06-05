@@ -12,6 +12,7 @@
 #include "ShootingSystem/Bullet.h"
 #include "Components/SceneComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Public/TimerManager.h"
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -56,34 +57,54 @@ APuzzlePlatformsCharacter::APuzzlePlatformsCharacter()
 //////////////////////////////////////////////////////////////////////////
 // Input
 
-void APuzzlePlatformsCharacter::Shoot()
+void APuzzlePlatformsCharacter::ShootPressed()
 {
-	if (BulletClass && !SprintTrue) 
+	IsFiring = true;
+
+	if (BulletClass && !SprintTrue)
 	{
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		SpawnParams.bNoFail = true;
-		SpawnParams.Instigator = this;
-	
-		USkeletalMeshComponent* SkeletalMesh = ACharacter::GetMesh();
+		SpawnBullet();
 
-		if (!ensure(SkeletalMesh != nullptr)) return;
-		const FVector SpawnLocationR = SkeletalMesh->GetSocketLocation(FName(TEXT("ik_hand_rSocket")));
-		const FVector SpawnLocationL = SkeletalMesh->GetSocketLocation(FName(TEXT("ik_hand_lSocket")));
-
-		const FRotator Rotation = FollowCamera->GetComponentRotation();
-	
-		/*FTransform BulletSpawnTransform;
-		BulletSpawnTransform.SetLocation(GetActorForwardVector() * 500.f + GetActorLocation());
-		BulletSpawnTransform.SetRotation(GetActorRotation().Quaternion());
-		BulletSpawnTransform.SetScale3D(FVector(1.f));*/
-
-		GetWorld()->SpawnActor<ABullet>(BulletClass, SpawnLocationR, Rotation, SpawnParams);
-		GetWorld()->SpawnActor<ABullet>(BulletClass, SpawnLocationL, Rotation, SpawnParams);
-
-		UE_LOG(LogTemp, Warning, TEXT("Fire"));
-		//GetWorld()->SpawnActor<ABullet>(BulletClass, BulletSpawnTransform, SpawnParams);
+		if (IsFiring)
+		{
+			GetWorldTimerManager().SetTimer(FireTimerHandle, this, &APuzzlePlatformsCharacter::SpawnBullet, FireRate, true);
+		}
 	}
+}
+
+void APuzzlePlatformsCharacter::ShootReleased()
+{
+	IsFiring = false;
+}
+
+void APuzzlePlatformsCharacter::SpawnBullet()
+{
+	if (!IsFiring) {
+		GetWorldTimerManager().ClearTimer(FireTimerHandle);
+		return;
+	}
+	UE_LOG(LogTemp, Warning, TEXT("spawn"));
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.bNoFail = true;
+	SpawnParams.Instigator = this;
+
+	USkeletalMeshComponent* SkeletalMesh = ACharacter::GetMesh();
+
+	if (!ensure(SkeletalMesh != nullptr)) return;
+	const FVector SpawnLocationR = SkeletalMesh->GetSocketLocation(FName(TEXT("ik_hand_rSocket")));
+	const FVector SpawnLocationL = SkeletalMesh->GetSocketLocation(FName(TEXT("ik_hand_lSocket")));
+
+	const FRotator Rotation = FollowCamera->GetComponentRotation();
+
+	/*FTransform BulletSpawnTransform;
+	BulletSpawnTransform.SetLocation(GetActorForwardVector() * 500.f + GetActorLocation());
+	BulletSpawnTransform.SetRotation(GetActorRotation().Quaternion());
+	BulletSpawnTransform.SetScale3D(FVector(1.f));*/
+
+	GetWorld()->SpawnActor<ABullet>(BulletClass, SpawnLocationR, Rotation, SpawnParams);
+	GetWorld()->SpawnActor<ABullet>(BulletClass, SpawnLocationL, Rotation, SpawnParams);
 }
 
 void APuzzlePlatformsCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -91,7 +112,8 @@ void APuzzlePlatformsCharacter::SetupPlayerInputComponent(class UInputComponent*
 	// Set up gameplay key bindings
 	check(PlayerInputComponent);
 
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APuzzlePlatformsCharacter::Shoot);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &APuzzlePlatformsCharacter::ShootPressed);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &APuzzlePlatformsCharacter::ShootReleased);
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
